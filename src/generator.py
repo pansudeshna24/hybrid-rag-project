@@ -2,6 +2,7 @@ import re
 from sentence_transformers import util
 from src.model import get_model
 
+
 def clean_text(text):
     text = re.sub(r'\b\d+\b', '', text)
     text = re.sub(r'(http\S+|www\S+|\S+@\S+)', '', text)
@@ -14,8 +15,11 @@ def generate(query, context):
     model = get_model()
 
     sentences = context.split(". ")
-    sentences = [clean_text(s) for s in sentences if len(s.split()) > 6]
 
+    # 🔥 LIMIT SENTENCES (VERY IMPORTANT)
+    sentences = sentences[:10]
+
+    sentences = [clean_text(s) for s in sentences if len(s.split()) > 6]
     sentences = list(dict.fromkeys(sentences))
 
     if len(sentences) == 0:
@@ -51,11 +55,11 @@ def generate(query, context):
 
         seen.add(short)
 
-        clean = " ".join(sent.split()[:18])
+        clean = " ".join(sent.split()[:15])
         final_points.append(clean)
 
         # 🔥 REDUCED
-        if len(final_points) == 3:
+        if len(final_points) == 2:
             break
 
     if len(final_points) == 0:
