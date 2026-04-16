@@ -1,27 +1,21 @@
 import re
-from sentence_transformers import SentenceTransformer, util
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
+from sentence_transformers import util
+from src.model import get_model
 
 def clean_text(text):
-    # remove numbers like 15 16 10
     text = re.sub(r'\b\d+\b', '', text)
-
-    # remove emails/phones/urls
     text = re.sub(r'(http\S+|www\S+|\S+@\S+)', '', text)
-
-    # remove extra spaces
     text = re.sub(r'\s+', ' ', text)
-
     return text.strip()
 
 
 def generate(query, context):
 
+    model = get_model()
+
     sentences = context.split(". ")
     sentences = [clean_text(s) for s in sentences if len(s.split()) > 6]
 
-    # remove duplicates
     sentences = list(dict.fromkeys(sentences))
 
     if len(sentences) == 0:
@@ -45,10 +39,8 @@ def generate(query, context):
 
         s = sent.lower()
 
-        # ❌ Remove noise
         if any(x in s for x in [
-            "call", "email", "visit", "scan", "click", "login",
-            "for any queries", "contact"
+            "call", "email", "visit", "scan", "click", "login", "contact"
         ]):
             continue
 
@@ -59,20 +51,17 @@ def generate(query, context):
 
         seen.add(short)
 
-        # keep only meaningful length
         clean = " ".join(sent.split()[:18])
-
         final_points.append(clean)
 
-        if len(final_points) == 4:
+        # 🔥 REDUCED
+        if len(final_points) == 3:
             break
 
-    # fallback
     if len(final_points) == 0:
-        final_points = [s[0] for s in ranked[:3]]
+        final_points = [s[0] for s in ranked[:2]]
 
-    # format nicely
-    answer = "### Startup Benefits:\n\n"
+    answer = "### Answer:\n\n"
 
     for point in final_points:
         answer += f"• {point.strip()}.\n\n"

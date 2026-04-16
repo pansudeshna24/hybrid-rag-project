@@ -1,10 +1,11 @@
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import util
+from src.model import get_model
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
-def strict_gate(query, passages, threshold=0.55):
+def strict_gate(query, passages, threshold=0.5):
     if len(passages) == 0:
         return False
+
+    model = get_model()
 
     texts = [p["text"] for p in passages]
 
@@ -17,8 +18,4 @@ def strict_gate(query, passages, threshold=0.55):
 
     print("🔍 Gate score:", max_score)
 
-    # 🔥 STRICT threshold
-    if max_score < threshold:
-        return False
-
-    return True
+    return max_score >= threshold

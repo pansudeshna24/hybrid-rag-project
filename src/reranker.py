@@ -1,8 +1,9 @@
-from sentence_transformers import SentenceTransformer, util
-
-model = SentenceTransformer('all-MiniLM-L6-v2')
+from sentence_transformers import util
+from src.model import get_model
 
 def rerank(query, passages):
+    model = get_model()
+
     texts = [p["text"] for p in passages]
 
     query_emb = model.encode(query, convert_to_tensor=True)
@@ -16,6 +17,5 @@ def rerank(query, passages):
         reverse=True
     )
 
-    # return both passage + score
-    return [(r[0], float(r[1])) for r in ranked[:7]]
-   
+    # 🔥 REDUCED
+    return [(r[0], float(r[1])) for r in ranked[:3]]
